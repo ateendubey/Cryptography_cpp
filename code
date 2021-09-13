@@ -1,0 +1,72 @@
+#include<iostream>
+#include<cstdio>
+#include<string.h>
+using namespace std;
+#define max 61
+const int key[][2]={{26,27},{28,29}};
+int key_mod=(key[0][0]*key[1][1])-(key[0][1]*key[1][0]);
+int key_inverse[2][2];
+char msg_encrypt[100];
+char number[]={'Q','W','E','R','T','Y','U','I','O','P','A','S','D','F','G','H','J','K','L','Z','X','C','V','B','N','M','q','w','e','r','t','y','u','i','o','p','a','s','d','f','g','h','j','k','l','z','x','c','v','b','n','m',' ','+','-','/','*','#','@','.','?'};
+int modulo(int num=0){
+    if(num>=max)
+        while(num>=max)
+            num -= max;
+    else
+        while(num<0)
+            num += max;
+    return num;
+} 
+void decryption(){
+    int key_mod_inverse=0;
+    while(modulo(key_mod_inverse*key_mod)!=1)
+        key_mod_inverse++;
+    key_inverse[0][0]= modulo(key_mod_inverse*key[1][1]);
+    key_inverse[1][1]= modulo(key_mod_inverse*key[0][0]);
+    key_inverse[0][1]= modulo((-1)*key_mod_inverse*key[0][1]);
+    key_inverse[1][0]= modulo((-1)*key_mod_inverse*key[1][0]);
+    int length= strlen(msg_encrypt);
+    int temp[2];
+    int temp1[2];
+    int i=0,j=0,k=0,l=0;
+    cout<<"\nDecrypted Message : ";
+    for(int i=0;i<length;i+=2){
+        for(j=i,l=0;j<(i+2);j++,l++){
+            for(k=0;k<max;k++)
+                if(number[k]==msg_encrypt[j])
+                    temp[l]=k;
+        }
+        temp1[0]=modulo((temp[0]*key_inverse[0][0])+(temp[1]*key_inverse[1][0]));
+        temp1[1]=modulo((temp[0]*key_inverse[0][1])+(temp[1]*key_inverse[1][1]));
+        cout<<number[temp1[0]]<<number[temp1[1]];
+    }
+}
+void encryption(int a,int b,int j){
+    int multiply[2]={modulo((a*key[0][0])+(b*key[1][0])),modulo((a*key[0][1])+(b*key[1][1]))};
+    for(int i=0;i<2;i++)
+        msg_encrypt[i+j]=number[multiply[i]];
+}
+int main(){
+    char msg[100];
+    int msg_int[100];
+    int i=0,j=0;
+    cout<<"Enter any message (max 100) : ";
+    cin.getline(msg,100);
+    int length = strlen(msg);
+    if(length%2!=0){
+        strcat(msg," ");
+        length++;
+    }
+    for(i=0;i<length;i++){
+        for(j=0;j<max;j++)
+            if(msg[i]==number[j])
+                msg_int[i]=j;
+    }
+    for(i=0;i<length;i+=2)
+        encryption(msg_int[i],msg_int[i+1],i);
+    cout<<"\nEncrypted Message : ";
+    for(i=0;i<length;i++)
+        cout<<msg_encrypt[i];
+    decryption();
+    return 0;
+}
